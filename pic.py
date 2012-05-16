@@ -47,16 +47,16 @@ def predtext(draw, pos, date, font, colour):
 
 def buildimage(filename, citywaitm, arrkate, arrdan, boxwaitm, arrbox):
   # Load Fonts
-  fntNorm = ImageFont.truetype( 'font/DejaVuSans.ttf', 24)
-  fntSmall = ImageFont.truetype('font/DejaVuSans.ttf', 12)
-  fntBold = ImageFont.truetype( 'font/DejaVuSans-Bold.ttf', 72)
+  fntNorm = ImageFont.truetype( 'themes/default/font/DejaVuSans.ttf', 24)
+  fntSmall = ImageFont.truetype('themes/default/font/DejaVuSans.ttf', 12)
+  fntBold = ImageFont.truetype( 'themes/default/font/DejaVuSans-Bold.ttf', 72)
   
   # Make some colours
   black = (0, 0, 0)
   white = (255, 255, 255)
   
   # Make a white image
-  im = Image.open('yt-dog-default.png').convert('RGB')
+  im = Image.open('themes/default/yt-dog.png').convert('RGB')
   draw = ImageDraw.Draw(im)
   
   # Static stuff
