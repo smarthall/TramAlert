@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /home/root/samtram
+cd /home/root/TramAlert
 ./pic.py && ./frame-ctrl.py /tmp/out.jpg
 
 
