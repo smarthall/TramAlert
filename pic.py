@@ -57,7 +57,7 @@ def buildimage(filename, citywaitm, arrkate, arrdan, boxwaitm, arrbox):
   white = (255, 255, 255)
   
   # Make a white image
-  im = ThemeResolver.timage('yt-dog.png').convert('RGB')
+  im = ThemeResolver.timage('morning-tramback.png').convert('RGB')
   draw = ImageDraw.Draw(im)
   
   # Static stuff
