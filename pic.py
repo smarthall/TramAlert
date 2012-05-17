@@ -103,13 +103,16 @@ boxdelta = boxarr - datetime.datetime.now()
 boxwaitm, boxwaits = divmod(boxdelta.total_seconds(), 60)
 
 # Get predictions for the next trams
-citypred = gettramarrivaltime(citytram)
-boxpred = gettramarrivaltime(boxtram)
-
-# Get stop predictions
-arrkate = citypred.get(katestop)
-arrdan  = citypred.get(danstop)
-arrbox  = boxpred.get(boxstop)
+arrdan = None
+arrkate = None
+arrbox = None
+if not citytram <= 0:
+  citypred = gettramarrivaltime(citytram)
+  arrkate = citypred.get(katestop)
+  arrdan  = citypred.get(danstop)
+if not citytram <= 0:
+  boxpred = gettramarrivaltime(boxtram)
+  arrbox  = boxpred.get(boxstop)
 
 # Build the image
 buildimage('/tmp/out.jpg', citywaitm, arrkate, arrdan, boxwaitm, arrbox)
