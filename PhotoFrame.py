@@ -35,7 +35,7 @@ class PhotoFrame:
     pos = 0
     while pos < len(content):
       buf = self.paddedBytes(content[pos:pos + self.bufferSize], self.bufferSize)
-      self.chunkyWrite(this.dev, buf)
+      self.chunkyWrite(self.dev, buf)
       pos += self.bufferSize
 
   def __init__(self):
