@@ -2,42 +2,9 @@
 # -*- coding: utf-8
 import Image, ImageFont, ImageDraw
 import datetime
-import simplejson, urllib, re
-import ThemeResolver
+import ThemeResolver, TramAPI
 
 ############ Functions #############
-def getnexttraminfo(stopid, route):
-  baseurl = "http://extranetdev.yarratrams.com.au/pidsservicejson/Controller/GetNextPredictedRoutesCollection.aspx"
-  url = baseurl + "?s=" + str(int(stopid)) + "&r=" + str(int(route))
-
-  result = simplejson.load(urllib.urlopen(url))
-
-  astr = result['responseObject'][0]['PredictedArrivalDateTime']
-  tram = result['responseObject'][0]['VehicleNo']
-  m = re.search('/Date\(([0-9]*)\d{3}\+1000\)/', astr)
-  ats = m.group(1)
-
-  arrival = datetime.datetime.fromtimestamp(int(ats))
-
-  return (arrival, tram)
-
-def gettramarrivaltime(tramid):
-  baseurl = "http://extranetdev.yarratrams.com.au/pidsservicejson/Controller/GetNextPredictedArrivalTimeAtStopsForTramNo.aspx"
-  url = baseurl + "?t=" + str(int(tramid))
-
-  result = simplejson.load(urllib.urlopen(url))
-  predictions = result['responseObject']['NextPredictedStopsDetailsTable']
-  
-  ret = {}
-
-  for predict in predictions:
-    stop = predict['StopNo']
-    m = re.search('/Date\(([0-9]*)\d{3}\+1000\)/', predict['PredictedArrivalDateTime'])
-    ats = m.group(1)
-    ret[stop] = datetime.datetime.fromtimestamp(int(ats))
-
-  return ret
-
 def predtext(draw, pos, date, font, colour):
   if date == None:
     text = "Unknown"
@@ -93,12 +60,12 @@ danstop      = 1725 # River Blvd to City
 boxstop      = 2757 # Box Hill to Box Hill
 
 # Trams to city
-(cityarr, citytram) = getnexttraminfo(homestopcity, tramline)
+(cityarr, citytram) = TramAPI.getnexttraminfo(homestopcity, tramline)
 citydelta = cityarr - datetime.datetime.now()
 citywaitm, citywaits = divmod(citydelta.total_seconds(), 60)
 
 # Trams to Box Hill
-(boxarr, boxtram) = getnexttraminfo(homestopbox, tramline)
+(boxarr, boxtram) = TramAPI.getnexttraminfo(homestopbox, tramline)
 boxdelta = boxarr - datetime.datetime.now()
 boxwaitm, boxwaits = divmod(boxdelta.total_seconds(), 60)
 
@@ -107,11 +74,11 @@ arrdan = None
 arrkate = None
 arrbox = None
 if not citytram <= 0:
-  citypred = gettramarrivaltime(citytram)
+  citypred = TramAPI.gettramarrivaltime(citytram)
   arrkate = citypred.get(katestop)
   arrdan  = citypred.get(danstop)
 if not citytram <= 0:
-  boxpred = gettramarrivaltime(boxtram)
+  boxpred = TramAPI.gettramarrivaltime(boxtram)
   arrbox  = boxpred.get(boxstop)
 
 # Build the image
