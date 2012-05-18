@@ -15,6 +15,25 @@ class PhotoFrame:
   chunkSize = 0x4000
   bufferSize = 0x20000
 
+  def __init__(self):
+    dev = usb.core.find(idVendor=self.vendorId, idProduct=self.prodIdStore)
+    if dev:
+      try:
+        dev.ctrl_transfer(CTRL_TYPE_STANDARD | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x06, 0xfe, 0xfe, 254)
+      except usb.core.USBError as e:
+        errorStr = str(e)
+      time.sleep(1)
+
+    dev = usb.core.find(idVendor=self.vendorId, idProduct=self.prodIdDisp)
+    if dev:
+      dev.set_configuration()
+      result = dev.ctrl_transfer(CTRL_TYPE_VENDOR | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x04, 0x00, 0x00, 1)
+    else:
+      print "Device not found"
+      sys.exit(-1)
+
+    self.dev = dev
+
   def paddedBytes(self, buf, size):
     diff = size - len(buf)
     return buf + bytes(b'\x00') * diff
@@ -38,28 +57,9 @@ class PhotoFrame:
       self.chunkyWrite(self.dev, buf)
       pos += self.bufferSize
 
-  def __init__(self):
-    dev = usb.core.find(idVendor=self.vendorId, idProduct=self.prodIdStore)
-    if dev:
-      try:
-        dev.ctrl_transfer(CTRL_TYPE_STANDARD | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x06, 0xfe, 0xfe, 254)
-      except usb.core.USBError as e:
-        errorStr = str(e)
-      time.sleep(1)
-
-    dev = usb.core.find(idVendor=self.vendorId, idProduct=self.prodIdDisp)
-    if dev:
-      dev.set_configuration()
-      result = dev.ctrl_transfer(CTRL_TYPE_VENDOR | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x04, 0x00, 0x00, 1)
-    else:
-      print "Device not found"
-      sys.exit(-1)
-
-    self.dev = dev
 
 
-frame = PhotoFrame()
-
+##### Script #####
 if len(sys.argv) < 2 or sys.argv[1] == "-":
   content = sys.stdin.read()
 else:
@@ -67,6 +67,7 @@ else:
   content = f.read()
   f.close()
 
+frame = PhotoFrame()
 frame.writeImage(content)
 
 
