@@ -16,6 +16,7 @@ class PhotoFrame:
   bufferSize = 0x20000
 
   def __init__(self):
+    # Look for a frame in storage mode, and set to display mode
     dev = usb.core.find(idVendor=self.vendorId, idProduct=self.prodIdStore)
     if dev:
       try:
@@ -24,14 +25,15 @@ class PhotoFrame:
         errorStr = str(e)
       time.sleep(1)
 
+    # Look for a frame in display mode
     dev = usb.core.find(idVendor=self.vendorId, idProduct=self.prodIdDisp)
     if dev:
       dev.set_configuration()
       result = dev.ctrl_transfer(CTRL_TYPE_VENDOR | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x04, 0x00, 0x00, 1)
     else:
-      print "Device not found"
-      sys.exit(-1)
+      raise "Device not found"
 
+    # Save the USB device
     self.dev = dev
 
   def paddedBytes(self, buf, size):
@@ -40,12 +42,11 @@ class PhotoFrame:
 
   def chunkyWrite(self, dev, buf):
     pos = 0
-    while pos < self.bufferSize:
+    while pos < len(buf):
       dev.write(0x02, buf[pos:pos + self.chunkSize])
       pos += self.chunkSize
 
   def writeImage(self, content):
-
     size = struct.pack('I', len(content))
     header = b'\xa5\x5a\x09\x04' + size + b'\x46\x00\x00\x00'
 
