@@ -36,14 +36,10 @@ class PhotoFrame:
     # Save the USB device
     self.dev = dev
 
-  def paddedBytes(self, buf, size):
-    diff = size - len(buf)
-    return buf + bytes(b'\x00') * diff
-
-  def chunkyWrite(self, dev, buf):
+  def chunkyWrite(self, buf):
     pos = 0
     while pos < len(buf):
-      dev.write(0x02, buf[pos:pos + self.chunkSize])
+      self.dev.write(0x02, buf[pos:pos + self.chunkSize])
       pos += self.chunkSize
 
   def writeImage(self, content):
@@ -54,10 +50,11 @@ class PhotoFrame:
 
     pos = 0
     while pos < len(content):
-      buf = self.paddedBytes(content[pos:pos + self.bufferSize], self.bufferSize)
-      self.chunkyWrite(self.dev, buf)
+      chunk = content[pos:pos + self.bufferSize]
+      diff = size - len(chunk)
+      chunk += bytes(b'\x00') * diff
+      self.chunkyWrite(chunk)
       pos += self.bufferSize
-
 
 
 ##### Script #####
