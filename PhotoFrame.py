@@ -51,7 +51,7 @@ class PhotoFrame:
     pos = 0
     while pos < len(content):
       chunk = content[pos:pos + self.bufferSize]
-      diff = size - len(chunk)
+      diff = self.bufferSize - len(chunk)
       chunk += bytes(b'\x00') * diff
       self.chunkyWrite(chunk)
       pos += self.bufferSize
