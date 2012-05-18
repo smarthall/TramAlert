@@ -21,7 +21,7 @@ class PhotoFrame:
 
   def chunkyWrite(self, dev, buf):
     pos = 0
-    while pos < bufferSize:
+    while pos < self.bufferSize:
       dev.write(0x02, buf[pos:pos + self.chunkSize])
       pos += self.chunkSize
 
