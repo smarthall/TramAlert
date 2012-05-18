@@ -25,13 +25,7 @@ class PhotoFrame:
       dev.write(0x02, buf[pos:pos + self.chunkSize])
       pos += self.chunkSize
 
-  def writeImage(self, dev):
-    if len(sys.argv) < 2 or sys.argv[1] == "-":
-      content = sys.stdin.read()
-    else:
-      f = open(sys.argv[1])
-      content = f.read()
-      f.close()
+  def writeImage(self, content):
 
     size = struct.pack('I', len(content))
     header = b'\xa5\x5a\x09\x04' + size + b'\x46\x00\x00\x00'
@@ -41,7 +35,7 @@ class PhotoFrame:
     pos = 0
     while pos < len(content):
       buf = self.paddedBytes(content[pos:pos + self.bufferSize], self.bufferSize)
-      self.chunkyWrite(dev, buf)
+      self.chunkyWrite(this.dev, buf)
       pos += self.bufferSize
 
   def __init__(self):
@@ -57,12 +51,23 @@ class PhotoFrame:
     if dev:
       dev.set_configuration()
       result = dev.ctrl_transfer(CTRL_TYPE_VENDOR | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x04, 0x00, 0x00, 1)
-      self.writeImage(dev)
     else:
       print "Device not found"
       sys.exit(-1)
 
+    self.dev = dev
+
 
 frame = PhotoFrame()
+
+if len(sys.argv) < 2 or sys.argv[1] == "-":
+  content = sys.stdin.read()
+else:
+  f = open(sys.argv[1])
+  content = f.read()
+  f.close()
+
+frame.writeImage(content)
+
 
 
