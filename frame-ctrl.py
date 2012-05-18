@@ -13,27 +13,6 @@ models = {'SPF-87H': (0x2033, 0x2034), 'SPF-107H': (0x2027, 0x2028) }
 chunkSize = 0x4000
 bufferSize = 0x20000
 
-def expect(result, verifyList):
-  resultList = result.tolist()
-  if resultList != verifyList:
-    print >> sys.stderr, "Warning: Expected " + str(verifyList) + " but got " + str(resultList)
-
-def storageToDisplay(dev):
-  print "Setting device to display mode"
-  try:
-    dev.ctrl_transfer(CTRL_TYPE_STANDARD | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x06, 0xfe, 0xfe, 254)
-  except usb.core.USBError as e:
-    errorStr = str(e)
-
-def displayModeSetup(dev):
-  print "Sending setup commands to device"
-  result = dev.ctrl_transfer(CTRL_TYPE_VENDOR | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x04, 0x00, 0x00, 1)
-  expect(result, [ 0x03 ])
-#  result = dev.ctrl_transfer(CTRL_TYPE_VENDOR | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x01, 0x00, 0x00, 2)
-#  expect(result, [ 0x09, 0x04 ])
-#  result = dev.ctrl_transfer(CTRL_TYPE_VENDOR | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x02, 0x00, 0x00, 1)
-#  expect(result, [ 0x46 ])
-
 def paddedBytes(buf, size):
   diff = size - len(buf)
   return buf + bytes(b'\x00') * diff
@@ -45,11 +24,6 @@ def chunkyWrite(dev, buf):
     pos += chunkSize
 
 def writeImage(dev):
-#  result = dev.ctrl_transfer(CTRL_TYPE_STANDARD | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x06, 0x0300, 0x00, 255)
-#  expect(result, [ 0x04, 0x03, 0x09, 0x04 ])
-
-#  result = dev.ctrl_transfer(CTRL_TYPE_STANDARD | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x06, 0x0301, 0x0409, 255)
-
   if len(sys.argv) < 2 or sys.argv[1] == "-":
     content = sys.stdin.read()
   else:
@@ -68,17 +42,16 @@ def writeImage(dev):
     chunkyWrite(dev, buf)
     pos += bufferSize
 
-  
-#  result = dev.ctrl_transfer(CTRL_TYPE_VENDOR | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x06, 0x00, 0x00, 2)
-#  expect(result, [ 0x00, 0x00 ])
-
 found = False
 
 for k, v in models.iteritems():
   dev = usb.core.find(idVendor=vendorId, idProduct=v[0])
   if dev:
     print "Found " + k + " in storage mode"
-    storageToDisplay(dev)
+    try:
+      dev.ctrl_transfer(CTRL_TYPE_STANDARD | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x06, 0xfe, 0xfe, 254)
+    except usb.core.USBError as e:
+      errorStr = str(e)
     time.sleep(1)
     dev = usb.core.find(idVendor=vendorId, idProduct=v[1])
     found = True
@@ -87,7 +60,7 @@ for k, v in models.iteritems():
   if dev:
     print "Found " + k + " in display mode"
     dev.set_configuration()
-    displayModeSetup(dev)
+    result = dev.ctrl_transfer(CTRL_TYPE_VENDOR | CTRL_IN | CTRL_RECIPIENT_DEVICE, 0x04, 0x00, 0x00, 1)
     writeImage(dev)
     found = True
 
